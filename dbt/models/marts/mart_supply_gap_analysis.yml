@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: mart_supply_gap_analysis
+    description: >
+      Final analytical mart that answers the core business question:
+      "Which stations have highest demand but lowest bike availability,
+      and when does this peak by hour?"
+
+      One row per station × hour_of_day × day_of_week combination.
+      Ranked by supply_gap_score (high = problem station/hour).
+
+    columns:
+      - name: station_id
+        description: "Citi Bike station identifier (matches GBFS station_id)"
+        tests:
+          - not_null
+
+      - name: station_name
+        description: "Human-readable station name (e.g. 'W 21 St & 6 Ave')"
+        tests:
+          - not_null
+
+      - name: hour_of_day
+        description: "Hour (0-23) when trips start / when availability is measured"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
+
+      - name: supply_gap_score
+        description: >
+          Key metric: total_departures × (1 - avg_availability_ratio).
+          Higher = worse. Station has high trip demand AND frequently runs out of bikes.
+        tests:
+          - not_null
+
+      - name: overall_gap_rank
+        description: "Global rank across all stations and hours. Rank 1 = worst supply gap."
+        tests:
+          - not_null
+          - unique
+
+      - name: gap_severity
+        description: "Human-readable label: CRITICAL / HIGH / MEDIUM / LOW"
+        tests:
+          - accepted_values:
+              values: ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+
+      - name: avg_availability_ratio
+        description: "Average fraction of capacity that has bikes available (0=empty, 1=full)"
+
+      - name: is_peak_gap_hour
+        description: "True if this is the single worst hour for this station"

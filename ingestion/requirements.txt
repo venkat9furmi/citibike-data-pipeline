@@ -1,0 +1,24 @@
+# ============================================================
+#  Python dependencies for the ingestion layer
+#  Install with:  pip install -r requirements.txt
+# ============================================================
+
+# --- GCP clients ---
+google-cloud-storage==2.16.0      # Upload files to GCS buckets
+google-cloud-bigquery==3.20.1     # Load/query BigQuery tables
+google-cloud-scheduler==2.13.3    # Create Cloud Scheduler jobs via API
+
+# --- HTTP & parsing ---
+requests==2.31.0                   # Fetch real-time GBFS JSON + S3 file listings
+beautifulsoup4==4.12.3             # Parse the S3 HTML index page to find CSV filenames
+lxml>=5.1.0                        # Fast HTML parser used by BeautifulSoup
+
+# --- Data handling ---
+pandas>=2.2.1                      # Local DataFrame work during ingestion
+pyarrow>=15.0.2                    # Needed to write Parquet from pandas if required
+
+# --- Config & utilities ---
+pyyaml==6.0.1                      # Read config.yaml
+python-dotenv==1.0.1               # Load .env secrets (service account key path)
+tenacity==8.2.3                    # Retry logic for flaky network calls
+loguru==0.7.2                      # Cleaner logging than stdlib logging

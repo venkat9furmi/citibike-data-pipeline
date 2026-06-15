@@ -1,0 +1,55 @@
+# =============================================================================
+#  dbt_project.yml — dbt Project Configuration
+#
+#  dbt (data build tool) transforms raw data in BigQuery using SQL.
+#  This file tells dbt:
+#    - What the project is called
+#    - Where to find models (SQL files)
+#    - Which BigQuery dataset each model layer writes to
+#    - How to materialize each layer (table vs view)
+#
+#  MATERIALIZATION STRATEGY:
+#    staging     → views    (no storage cost; always fresh; run on-demand)
+#    intermediate→ views    (same reasoning)
+#    marts       → tables   (pre-computed; fast for dashboards and analysis)
+# =============================================================================
+
+name: "citibike_pipeline"
+version: "1.0.0"
+config-version: 2
+
+profile: "citibike_pipeline"   # Links to profiles.yml for DB connection
+
+model-paths:   ["models"]      # Where SQL model files live
+test-paths:    ["tests"]       # Where dbt tests live
+macro-paths:   ["macros"]      # Reusable Jinja SQL snippets
+
+target-path:   "target"        # Compiled SQL output (auto-generated)
+clean-targets: ["target", "dbt_packages"]
+
+# ── Per-model configuration ───────────────────────────────────────────────────
+models:
+  citibike_pipeline:
+
+    staging:
+      # Staging models go into the citibike_staging BigQuery dataset
+      +schema: citibike_staging
+      +materialized: view          # Views: no data duplication, always up-to-date
+
+    intermediate:
+      +schema: citibike_staging    # Intermediate also lives in staging dataset
+      +materialized: view
+
+    marts:
+      # Mart models go into citibike_marts — pre-computed for fast querying
+      +schema: citibike_marts
+      +materialized: table         # Tables: pre-computed, fast for BI tools
+
+      # Partition and cluster the mart table for performance
+      # Partitioning by hour lets BigQuery skip most data for time-range queries
+      supply_gap:
+        +partition_by:
+          field: "trip_date"
+          data_type: "date"
+          granularity: "day"
+        +cluster_by: ["station_id", "start_hour"]

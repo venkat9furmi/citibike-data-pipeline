@@ -1,0 +1,58 @@
+# =============================================================================
+#  sources.yml — dbt Source Declarations
+# =============================================================================
+#  WHY?
+#    dbt needs to know where "raw" data lives before transformations start.
+#    Declaring sources lets dbt:
+#      1. Generate lineage graphs (see exactly where data comes from)
+#      2. Run source freshness checks (alert if data is stale)
+#      3. Let models reference sources with {{ source('schema', 'table') }}
+#         instead of hardcoded table paths
+# =============================================================================
+
+version: 2
+
+sources:
+  - name: citibike_raw
+    description: "Raw Citi Bike data in BigQuery — external tables over GCS"
+    database: citibike-pipeline-499418
+    schema: citibike_raw
+
+    # Freshness check: warn if data is older than 25 hours, error if >49 hours
+    freshness:
+      warn_after: {count: 25, period: hour}
+      error_after: {count: 49, period: hour}
+
+    tables:
+      - name: trips_parquet
+        description: "Cleaned trip history Parquet files processed by Spark on Dataproc"
+        loaded_at_field: started_at_ts    # Field dbt uses to check freshness
+        columns:
+          - name: ride_id
+            description: "Unique identifier for each trip"
+            tests:
+              - unique
+              - not_null
+          - name: start_station_id
+            tests: [not_null]
+          - name: started_at_ts
+            tests: [not_null]
+          - name: member_casual
+            tests:
+              - accepted_values:
+                  values: ["member", "casual"]
+
+      - name: station_status_json
+        description: "Real-time GBFS station availability snapshots (every 5 min)"
+        loaded_at_field: _ingested_at
+        columns:
+          - name: _ingested_at
+            tests: [not_null]
+
+      - name: station_information
+        description: "Static station reference data (name, lat/lon, capacity)"
+        columns:
+          - name: station_id
+            tests:
+              - unique
+              - not_null

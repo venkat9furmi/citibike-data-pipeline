@@ -1,0 +1,35 @@
+# =============================================================================
+#  profiles.yml — dbt Connection Profile
+#
+#  This tells dbt HOW to connect to BigQuery.
+#  Place this file in ~/.dbt/profiles.yml (your home directory),
+#  NOT inside the project folder — it contains credential paths.
+#
+#  METHOD: oauth — uses your logged-in gcloud credentials.
+#  Run once: gcloud auth application-default login
+# =============================================================================
+
+citibike_pipeline:
+  target: dev                    # Default target (can also run --target prod)
+  outputs:
+
+    dev:
+      type: bigquery
+      method: oauth              # Uses: gcloud auth application-default login
+      project: citibike-pipeline-499418
+      dataset: citibike_staging  # Default dataset for this profile
+      location: US               # BigQuery dataset location
+      threads: 4                 # How many models to run in parallel
+      timeout_seconds: 300       # Max query time before dbt cancels it
+      priority: interactive      # "interactive" = faster, "batch" = cheaper
+
+    prod:
+      type: bigquery
+      method: service-account    # In production, use a Service Account key
+      project: citibike-pipeline-499418
+      dataset: citibike_staging
+      location: US
+      threads: 8
+      timeout_seconds: 600
+      priority: batch
+      keyfile: /secrets/citibike-sa-key.json   # Mount this in Cloud Run/Scheduler

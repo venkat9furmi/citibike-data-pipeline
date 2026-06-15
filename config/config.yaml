@@ -1,0 +1,34 @@
+# ============================================================
+#  Citi Bike Pipeline — Central Configuration
+#  All scripts read from this file. Change values here only.
+# ============================================================
+
+gcp:
+  project_id: "citibike-pipeline-499418"
+  region: "us-east1"                        # Closest region to NYC data
+
+gcs:
+  bucket_name: "citibike-pipeline-499418-data"
+  raw_trip_prefix: "raw/trip_history"       # Where raw CSVs land
+  raw_gbfs_prefix: "raw/gbfs"              # Where real-time JSON snapshots land
+  processed_prefix: "processed/trips"       # Where Spark output Parquet lands
+
+bigquery:
+  raw_dataset: "citibike_raw"              # Holds external tables over GCS files
+  staging_dataset: "citibike_staging"      # dbt staging models live here
+  marts_dataset: "citibike_marts"          # Final business-ready tables
+
+dataproc:
+  # Serverless Dataproc — no cluster to manage, GCP auto-scales
+  spark_history_bucket: "citibike-pipeline-499418-spark-logs"
+
+sources:
+  # Citi Bike publishes monthly trip CSV files on this S3 bucket
+  trip_history_base_url: "https://s3.amazonaws.com/tripdata/"
+  # GBFS = General Bikeshare Feed Specification (open standard for real-time data)
+  gbfs_station_status_url: "https://gbfs.citibikenyc.com/gbfs/en/station_status.json"
+  gbfs_station_info_url: "https://gbfs.citibikenyc.com/gbfs/en/station_information.json"
+
+ingestion:
+  # How many months of history to backfill on first run
+  months_to_backfill: 12

@@ -1,0 +1,38 @@
+# Python virtual environments - never commit these (huge, machine-specific)
+venv/
+dbt-venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# dbt - compiled output and logs (auto-generated, not source code)
+dbt/target/
+dbt/logs/
+dbt/.user.yml
+
+# Credentials and secrets - NEVER commit these
+*.json
+!dbt/models/**/*.json
+application_default_credentials.json
+service_account*.json
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# Temporary files created during pipeline runs
+*.tmp
+*.zip
